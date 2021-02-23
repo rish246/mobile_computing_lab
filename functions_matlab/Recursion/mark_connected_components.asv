@@ -1,0 +1,53 @@
+function input_array = mark_connected_components(input_array)
+    
+    [n_rows, n_cols] = size(input_array);
+    
+    %%% Construct the resultant array
+    nth_component = -1;
+    
+    for row = 1 : n_rows
+        
+        for col = 1 : n_cols
+            
+            cur_cell = input_array(row, col);
+            
+            if (cur_cell == 1)
+               input_array = mark(input_array, row, col, nth_component);
+               nth_component = nth_component - 1;
+            end
+            
+        end
+        
+    end
+            
+    
+
+end
+
+
+function input_array = mark(input_array, row, col, value)
+    % Run dfs
+    [n_rows, n_cols] = size(input_array);
+    
+    fprintf("In Mark Function ");
+    
+    if ((row < 1) || (row > n_rows) || (col < 1) || (col > n_cols))
+        fprintf("Coordinates : (%d, %d) are not in range\n", row, col);
+        
+    elseif(input_array(row, col) == 1)
+        disp([row, col]);
+        input_array(row, col) = value;
+    
+        % Make it to migrate only in the right direction
+        
+        
+        % This is working great for right neighbours ... just extend the
+        % working to top, bottom, left neighbours as well
+        neighbours_x = [row, row,       row + 1, row - 1];
+        neighbours_y = [col + 1, col - 1, col,   col];
+        
+        for i = [ 1 : 
+        input_array = mark(input_array, right_neighbour_x, right_neighbour_y, value);
+    
+    end    
+end
