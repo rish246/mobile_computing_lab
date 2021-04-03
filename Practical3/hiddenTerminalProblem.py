@@ -21,7 +21,7 @@ def main():
     for terminal in terminals:
         for i in range(len(terminals)):
             if terminal.in_coverage_range(terminals[i]) and (terminal.name != terminals[i].name):
-                print(f'Terminal {terminals[i].name} colliding with {terminal.name}')
+                print(f'Terminal {terminals[i].name} is in coverage range of {terminal.name}')
                 n_collisions[terminals[i].name].append(terminal.name)
 
 
