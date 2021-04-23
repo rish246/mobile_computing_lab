@@ -25,7 +25,7 @@ class Node:
 
 
     def print_routing_table(self):
-        print(f"---------------- {self.name}'s' routing table --------------")
+        print(f"----------------- {self.name}'s' routing table -------------------")
         print('    DestNode\tNextHop\tCost\tSeqNo')
         for node_entry in self.routing_table:
             print(f'{self.routing_table[node_entry]}')

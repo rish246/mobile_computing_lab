@@ -8,12 +8,10 @@ class Packet:
 
     
     def get_path(self):
-        path = []
-        for node in self.nodes:
-            path.append(str(node))
+        path = [str(node) for node in self.nodes]
 
-        path = ' --> '.join(path)
-        return path
+        return ' --> '.join(path)
+        
         
 
 
@@ -30,10 +28,10 @@ class Node:
     def is_packet_already_recieved(self, packet):
         return (packet.id in self.recieved_packets)
 
-    def recieve_RREP(self, dest_node, packet):
-        print(f'Node {self.name} recieved RREP packet from {dest_node}')
+    def recieve_RREP(self, packet : Packet):
+        print(f'Node {self.name} recieved RREP packet from {packet.source}')
         print(f'Path is : {packet.get_path()}')
-        print(f'Sending Data to {dest_node}')
+        print(f'Sending Data to {packet.source}')
 
     def send_RREQ(self, packet):
         for node in self.neighbours:
@@ -47,7 +45,7 @@ class Node:
             print(f"Found Destination node... {self}")
             print(f'Node {self} is sending an RREP packet to {packet.source}')
             packet.nodes.append(self)
-            packet.source.recieve_RREP(self, Packet(2, packet.id, packet.nodes, self, packet.source))
+            packet.source.recieve_RREP(Packet(2, packet.id, packet.nodes, self, packet.source))
             return
 
         
