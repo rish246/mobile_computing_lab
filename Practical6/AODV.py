@@ -7,6 +7,11 @@ class Packet:
         self.dest_seq = ""
         self.hop_cnt = 0
 
+    def copy(self):
+        new_packet = Packet(self.source, self.source_seq, self.source_bcast_id, self.dest)
+        new_packet.hop_cnt = self.hop_cnt + 1
+        return new_packet
+
 
 
 class Node:
@@ -31,7 +36,7 @@ class Node:
             node.recieve_RREQ(self, packet)
 
     def print_routing_table(self):
-        print(f'-------------------------------  {self} routing  --------------------------------')
+        print(f'-------------------------------  {self} routing table --------------------------------')
         print(f'Dest\t    Next Hop\t    Hop Count\t    Seq. No')
         print(f'----------------------------------------------------------------------------')
 
@@ -68,17 +73,15 @@ class Node:
 
         self.recieved_packets.append(packet.source_bcast_id)
 
-       
-        new_entry = Packet(packet.source, packet.source_bcast_id, packet.source_seq, packet.dest)
-        new_entry.hop_cnt = packet.hop_cnt + 1
+        new_packet = packet.copy()
  
-        self.add_routing_entry(new_entry, sender)
+        self.add_routing_entry(new_packet, sender)
 
         if self.entry_in_routing_table(packet.dest):
             print(f'Node {self} recieve RREQ from {sender}... Sending RREP to {packet.source}')
             return
 
-        if new_entry.dest == self:
+        if new_packet.dest == self:
             print(f'{self} recieved the RREQ packet from {sender}.. Sending a reply to {sender}')
 
             RREP_Packet = Packet(self, self.seq_no, self.broadcast_id, packet.source)
@@ -86,7 +89,7 @@ class Node:
             self.send_RREP(packet.source, RREP_Packet)
             return    
 
-        self.broadcase_RREQ(new_entry)
+        self.broadcase_RREQ(new_packet)
 
     def send_RREP(self, node, packet):
 
@@ -103,14 +106,10 @@ class Node:
             return
 
         ## add an entry in table
-        new_entry = Packet(packet.source, packet.source_bcast_id, packet.source_seq, packet.dest)
-        new_entry.hop_cnt = packet.hop_cnt + 1
-
+        new_entry = packet.copy()
 
         self.add_routing_entry(new_entry, sender)
         self.send_RREP(new_entry.dest, new_entry)
-
-
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -118,9 +117,7 @@ class Node:
 def print_routing_tables(network):
     for node in network:
         node.print_routing_table()
-
-        print("\n")
-
+        print("")
 
 def main():
     A = Node("A")
@@ -141,7 +138,6 @@ def main():
 
 
     RREQ_Packet = Packet(A, A.seq_no, A.broadcast_id, E)
-    print_routing_tables(network)
 
 
     A.add_routing_entry(RREQ_Packet, A)

@@ -1,0 +1,101 @@
+class Packet {
+    def Packet(t, i, n, s, d) {
+        this.type = t;
+        this.id = i;
+        this.source = s;
+        this.path = n;
+        this.dest = d;
+    }
+
+    def pathToString() {
+        result = "";
+        for(node in this.path) {
+            result = result + node.name + " -> ";
+        }
+        return result;
+    }
+
+};
+
+class Node {
+    def Node(name) {
+        this.name = name;
+        this.neighbours = [];
+        this.recievedPackets = [];
+    }
+
+    def addNeighbour(node) {
+        this.neighbours = this.neighbours + node;
+        node.neighbours = node.neighbours + this;
+    }
+
+
+    def sendRREQ(packet) {
+        for(neighbour in this.neighbours) {
+            neighbour.recieveRREQ(this, packet);
+        }
+    }
+
+    def isPacketAlreadyRecieved(packet) {
+        for(pkt in this.recievedPackets) {
+            if(pkt == packet.id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    def recieveRREP(packet) {
+        print("-----------RREP Packet reached the dest node : " + this.name + "---------------");
+        print("Path from " + this.name + " to " + packet.source.name + " is : " + packet.pathToString());
+    }
+
+    def recieveRREQ(sender, packet) {
+        print("Node " + this.name + " recieved RREQ from " + packet.source.name);
+
+        # check if already recieved RREQ 
+        if(!this.isPacketAlreadyRecieved(packet)) {
+            if(packet.dest.name == this.name) {
+                print("---------RREQ packet reached the destination node " + this.name + "--------");
+                packet.path = packet.path + this;
+                packet.source.recieveRREP(new Packet(2, packet.id, packet.path, this, packet.source));
+            }
+            else {
+                this.recievedPackets = this.recievedPackets + packet.id;
+                packet.path = packet.path + this;
+
+                this.sendRREQ(packet);
+            }
+        }
+
+    }
+
+    def printNeighbours() {
+        print("NEIGHBORS");
+        for(neighbour in this.neighbours) {
+            print(neighbour.name);
+        }
+    }
+};
+
+
+def main() {
+    a = new Node("a");
+    b = new Node("b");
+    c = new Node("c");
+    d = new Node("d");
+
+    a.addNeighbour(b);
+    a.addNeighbour(c);
+    c.addNeighbour(d);
+
+
+
+    ############# a send RREQ to d ###########
+    a.recievedPackets = a.recievedPackets + 1;
+    ourPacket = new Packet(1, 1, [a], a, d);
+    a.sendRREQ(ourPacket);
+}
+
+main();

@@ -2,14 +2,14 @@ class Packet:
     def __init__(self, type, id, nodes, source, dest):
         self.type = type
         self.id = id
-        self.nodes = nodes
+        self.path = nodes
         self.source = source
         self.dest = dest
+    
 
     
     def get_path(self):
-        path = [str(node) for node in self.nodes]
-
+        path = [str(node) for node in self.path]
         return ' --> '.join(path)
         
         
@@ -20,6 +20,8 @@ class Node:
         self.name = name
         self.neighbours = []
         self.recieved_packets = []
+        self.path_cache = {}
+
 
     def add_neighbour(self, node):
         self.neighbours.append(node)
@@ -31,9 +33,16 @@ class Node:
     def recieve_RREP(self, packet : Packet):
         print(f'Node {self.name} recieved RREP packet from {packet.source}')
         print(f'Path is : {packet.get_path()}')
+        print('Adding path in path cache')
+        self.path_cache[packet.dest] = packet.path
         print(f'Sending Data to {packet.source}')
 
     def send_RREQ(self, packet):
+        print(f'Checking path cache')
+        if packet.dest in self.path_cache.keys():
+            print('Path already in cache... no need to send RREQ')
+            return
+
         for node in self.neighbours:
             node.recieve_RREQ(packet)
 
@@ -42,10 +51,13 @@ class Node:
 
         # check if the dest is not current node
         if packet.dest == self:
+            print(f'---------------------------------')
             print(f"Found Destination node... {self}")
             print(f'Node {self} is sending an RREP packet to {packet.source}')
-            packet.nodes.append(self)
-            packet.source.recieve_RREP(Packet(2, packet.id, packet.nodes, self, packet.source))
+            print(f'---------------------------------')
+            
+            packet.path.append(self)
+            packet.source.recieve_RREP(Packet(2, packet.id, packet.path, self, packet.source))
             return
 
         
@@ -54,7 +66,7 @@ class Node:
 
         self.recieved_packets.append(packet.id)
 
-        packet.nodes.append(self)
+        packet.path.append(self)
 
         self.send_RREQ(packet)
     
@@ -80,10 +92,12 @@ def main():
     D.add_neighbour(F)
 
     print('----------------------------------')
-    print('---------  DRS PROTOCOL  ---------')
+    print('---------  DSR PROTOCOL  ---------')
 
     print('----------------------------------')
-    print('Sending Data from S to F')
+    print('Sending Data from Node S to Node F')
+    print('----------------------------------')
+
 
     unique_id = 1
     S.recieved_packets.append(1)
